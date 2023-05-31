@@ -1,0 +1,379 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#define MAX_NAME 100
+#define MAx_PWORD 100
+#define MAX_RDV 100
+/*structure d'admin*/
+typedef struct admin{
+ char name[MAX_NAME];
+ char pass_word[MAx_PWORD];}admin;
+admin Admin={"admin","fplibrary"};
+
+void connex_admin(admin ADMIN){
+    admin conn;
+    int n,m;
+ printf("\n Votre nom:");
+ scanf(" %s",ADMIN.name);
+ strcpy(conn.name,ADMIN.name);
+ printf("\n votre mot de passe:");
+ scanf(" %s",ADMIN.pass_word);
+ strcpy(conn.pass_word,ADMIN.pass_word);
+ n=strcmp(Admin.name,conn.name);
+ m=strcmp(Admin.pass_word,conn.pass_word);
+ if(n==0 && m==0){
+    printf("connexion reussie");
+    }
+  else{
+    printf("\n votre nom ou mot de passe est incorrect!\n");
+    connex_admin(ADMIN);}  }
+/*structure d'utilisateurs*/
+typedef struct user{
+ char name[MAX_NAME];
+ char pass_word[MAx_PWORD];
+ char email[MAX_NAME];
+ struct user *next;}user;
+
+typedef struct book{
+
+char name[MAX_NAME];
+char writer[MAX_NAME];
+char info[MAX_NAME];
+struct book *next;
+}book;
+FILE *fich_book=NULL;
+void add_to_filebook(book *data){
+ fich_book=fopen("book.txt","a");
+ fprintf(fich_book,"%s\n",data->name);
+ fprintf(fich_book,"%s\n",data->writer);
+ fprintf(fich_book,"%s\n",data->info);
+ fclose(fich_book);
+}
+int add_book(book **head){
+    int ch;
+    char name[MAX_NAME];char writer[MAX_NAME];char infos[500];
+    book *n_book=(book*)malloc(sizeof(book));
+    printf("\n Le nom d'oeuvre:");
+    scanf(" %s",name);
+    strcpy(n_book->name,name);
+    printf("\n Le nom d'auteur:");
+    scanf(" %s",writer);
+    strcpy(n_book->writer,writer);
+    printf("\n A propos d'oeuvre:");
+    scanf(" %s",infos);
+    strcpy(n_book->info,infos);
+    n_book->next=NULL;
+    if (*head == NULL)
+   *head = n_book;
+ else {
+        book *p;
+        for (p = *head; p->next != NULL; p = p->next);
+               p->next = n_book;}
+    add_to_filebook(n_book);
+    printf("\n voullez vous ajouter un autre livre?\n 1-Ajouter\n 2-Annuler\n");
+    scanf("%d",&ch);
+    if(ch==1)
+       return add_book(&head);
+    if(ch==2)
+        return 0;
+
+}
+/*suppression d'oeuvre*/
+void del_book(const char* fichier, book **head){
+FILE* fichierTemp = fopen(fichier, "wb"); // Fichier temporaire pour copier les livres
+char name[MAX_NAME];
+    book livre;
+
+    rewind(fichier); // Retourner au début du fichier
+    printf("\n Enter le nom du livre:");
+    scanf("%s",name);
+    while (fread(&livre, sizeof(livre), 1, fichier) == 1) {
+        if (strcmp(livre.name, name) != 0) {
+            fwrite(&livre, sizeof(livre), 1, fichierTemp); // Copier le livre dans le fichier temporaire
+        }
+    }
+
+    fclose(fichier);
+    fclose(fichierTemp);
+
+    remove(fichier); // Supprimer le fichier original
+    rename("temp.txt", fichier); // Renommer le fichier temporaire
+
+    printf("Le livre '%s' a été supprimé avec succès.\n", name);
+}
+
+
+//ajouter à la liste des empruntes
+FILE *fich_emprt=NULL;
+void add_to_fileemprt(book *data){
+ fich_book=fopen("emprt.txt","a");
+ fprintf(fich_book,"%s\n",data->name);
+
+ fclose(fich_emprt);
+}
+int add_emprt(book **head){
+    int ch;
+    char name[MAX_NAME];
+    book *n_book=(book*)malloc(sizeof(book));
+    printf("\n Le nom d'oeuvre:");
+    scanf(" %s",name);
+    strcpy(n_book->name,name);
+    n_book->next=NULL;
+    if (*head == NULL)
+   *head = n_book;
+ else {
+        book *p;
+        for (p = *head; p->next != NULL; p = p->next);
+               p->next = n_book;}
+    add_to_fileemprt(n_book);
+    printf("\n voullez vous ajouter un autre livre?\n 1-Ajouter\n 2-Annuler\n");
+    scanf("%d",&ch);
+    if(ch==1)
+       return add_emprt(&head);
+    if(ch==2)
+        return 0;
+
+}
+
+//users
+FILE *fich=NULL;/*fichier des utilisateurs*/
+void add_to_file(user *data){
+    fich=fopen("users.txt","a");
+    fprintf(fich,"%s\n",data->name);
+    fprintf(fich,"%s\n",data->pass_word);
+    fprintf(fich,"%s\n",data->email);
+    fclose(fich);}
+void add_user(user **head){
+ char name[MAX_NAME];char pass_word[MAx_PWORD];char email[MAX_NAME];
+ user *n_user=(user*)malloc(sizeof(user));
+ printf("\n votre nom:");
+ scanf("%s",name);
+ strcpy(n_user->name, name);
+ printf("\n votre email:");
+ scanf("%s",email);
+ strcpy(n_user->email,email);
+ printf("\n votre mot de passe:");
+ scanf("%s",pass_word);
+ strcpy(n_user->pass_word, pass_word);
+ n_user->next=NULL;
+ if (*head == NULL)
+   *head = n_user;
+ else {
+        user *p;
+        for (p = *head; p->next != NULL; p = p->next);
+               p->next = n_user;}
+    add_to_file(n_user);}
+
+
+
+int connexion(user **head) {
+    FILE* fich = fopen("users.txt", "r");
+    char f_name[MAX_NAME];
+    char f_pword[MAX_NAME];
+    char name[MAX_NAME];
+    char p_word[MAX_NAME];
+
+    if (fich != NULL) {
+        printf("\n Votre nom: ");
+        scanf("%s", name);
+        printf("\n Votre mot de passe: ");
+        scanf("%s", p_word);
+
+        while (fscanf(fich, "%s %s", f_name, f_pword) == 2) {
+            if (strcmp(f_name, name) == 0 && strcmp(f_pword, p_word) == 0) {
+                printf("\n La connexion est reussie.\n Bienvennue %s \n",name);
+                fclose(fich);
+                return 1;
+            }
+        }
+
+        printf("\n Votre nom ou mot de passe est incorrect!\n" );
+        fclose(fich);
+        return connexion(head); // Recursive call
+    }
+
+    return 0;
+}
+//Afficher les livres
+void parcour(book* head) {
+    book* current = head;
+    while (current != NULL) {
+        // Afficher le champ spécifique name
+        printf("%s\n", current->name);
+        current = current->next;
+    }
+}
+void afficher(const char* fich,book **head){
+ FILE* file = fopen(fich, "r");
+    if (file != NULL) {
+        char name[MAX_NAME];
+        while (fgets(name, sizeof(name), file) != NULL) {
+            // Supprimer le saut de ligne à la fin du nom
+            name[strcspn(name, "\n")] = '\0';
+
+            book* n_book = (book*)malloc(sizeof(book));
+            strcpy(n_book->name, name);
+            n_book->next = NULL;
+
+            // Insérer le nœud dans la liste chaînée
+            if (head == NULL) {
+                head = n_book;
+            } else {
+                book* current = head;
+                while (current->next != NULL) {
+                    current = current->next;
+                }
+                current->next = n_book;
+            }
+        }
+        fclose(file);
+
+        // Afficher le champ spécifique de la liste chaînée
+        parcour(head);
+
+        // Libération de la mémoire occupée par les nœuds de la liste
+       book* current = head;
+        while (current != NULL) {
+            book* temp = current;
+            current = current->next;
+            free(temp);
+        }
+    } else {
+        printf("Erreur lors de l'ouverture du fichier.\n");
+    }
+
+}
+//Rendez vous
+struct RendezVous {
+
+    char date[MAX_RDV];
+    int heure;
+};
+
+int rdv() {
+    struct RendezVous rdv;
+
+    int heure;
+    char date[MAX_RDV] ;
+
+    printf("Bienvenue dans notre systeme de reservation!\n\n");
+    printf("entrer la date de votre rendez vous");
+    scanf("%s",&date);
+
+
+    printf("A quelle heure souhaitez-vous reserver (entre 8 et 16) ? ");
+    scanf("%d", &heure);
+
+    if (heure >= 8 && heure <= 16) {
+        printf("\nFelicitations, votre reservation a ete enregistree avec succes!\n");
+
+        printf("Heure de reservation : %d\n", heure);
+        printf("date de reservation est : %s\n",date);
+    } else {
+        printf("\nDesole, les reservations ne sont possibles qu entre 8h et 16h.\n");
+
+    }
+
+    return 0;
+}
+
+//Rechercher/emprunter
+int recherche(book **head){
+ int ch2;
+ FILE* fich = fopen("book.txt", "r");
+ FILE* p_fich = fopen("emprt.txt", "r");
+    char f_name[MAX_NAME];
+    char name[MAX_NAME];
+
+    if (fich != NULL) {
+        printf("\nEnter le nom du livre: ");
+        scanf("%s", name);
+        while (fscanf(fich, "%s", f_name) == 1) {
+            if (strcmp(f_name, name) == 0) {
+                printf("\n %s \n status:\n",name);
+                 if (p_fich != NULL){
+                    while (fscanf(p_fich, "%s", f_name) == 1) {
+                        if (strcmp(f_name, name) == 0) {
+                                printf("deja emprunte!");
+                                fclose(p_fich);}}
+                        printf("Disponible\n voullez vous l emprunter:\n 1-Emprunter\n 2-Annuler");
+                        scanf("\n%d",&ch2);
+                        if(ch2==1)
+                            rdv();
+                        if(ch2==2)
+                            return recherche(&head);
+
+                        fclose(p_fich);
+                        }
+                fclose(fich);
+                return 1;
+            }
+        }
+
+        printf("\n Ce livre n existe pas \n" );
+        fclose(fich);
+        return recherche(&head); // Recursive call
+    }}
+
+
+int main()
+{
+
+    system("color A ");
+    user *head=NULL; admin Admin;book *head_b=NULL;
+    const char* filename = "book.txt";
+
+    int m,n,ch1,ch2,ch3;
+    connex:/*etiquette*/
+    printf(" se connecter au temps que: \n1- Admin: \n2-utilisateur:\n");
+    scanf("%d",&m);
+     if(m==1){
+        connex_admin(Admin);
+        menu:/*etiquette des choix*/
+        printf("\n Voullez vous: \n 1-Ajouter un livre\n 2-Supprimer un livre\n 3-Ajouter un livre a la liste des empruntes\n 4-Supprimer un livre des empruntes\n");
+        scanf("\n%d",&ch1);
+        switch(ch1){
+         case 1: add_book(&head_b); break;
+         case 2: printf("\n voullez vous supprimer un oeuvre?:\n 1-confirmer\n 2-Annuller ");
+                 scanf("%d",&ch2);
+                   if(ch2==1)
+                    del_book("book.txt", &head_b);
+
+                   if(ch2==2)
+                    goto menu;
+         case 3: add_emprt(&head_b); break;
+         case 4: del_book("emprt.txt",&head_b); break;
+
+        }
+        exit(0);}
+    if(m==2){
+    conn1:
+    printf(" \n 1-S'inscrire \n 2-se connecter\n");
+    scanf(" %d",&n);
+   switch (n){
+       case 1:
+        add_user(&head);
+        break;
+        goto menu2;
+       case 2:
+            connexion(&head); break;
+            goto menu2;
+      default:
+        printf("\n votre choix est invalide!");
+        goto conn1;}}
+    else {
+         printf("\n votre choix est invalide!\n");
+        goto connex;}
+    menu2:
+        printf("\n voullez vous:\n 1-afficher les livres \n 2-Rechercher\n ");
+        scanf(" %d",&ch3);
+        switch(ch3){
+        case 1: afficher("book.txt",&head_b); break;
+        case 2: recherche(&head_b); break;
+        default :
+            printf("\n votre choix est invalide!");
+        goto menu2;}
+
+
+    return 0;}
+
